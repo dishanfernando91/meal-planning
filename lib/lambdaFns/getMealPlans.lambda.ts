@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyCallback } from "aws-lambda";
 import * as AWS from "aws-sdk";
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = process.env.TABLE_NAME || "";
+const TABLE_NAME = process.env.TABLE_NAME || "Meals_Table";
 
 export async function hander(
   event: APIGatewayProxyEvent,
@@ -17,12 +17,13 @@ export async function hander(
     });
   }
 
+  const { data: eventData } = JSON.parse(event.body);
+
   const params = {
     TableName: TABLE_NAME,
     KeyConditionExpression: "date = :date",
     ExpressionAttributeValues: {
-      //@ts-ignore
-      ":date": JSON.stringify(event.body.date),
+      ":date": JSON.stringify(eventData.date),
     },
   };
 

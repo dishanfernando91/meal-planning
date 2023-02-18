@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-const TABLE_NAME = process.env.TABLE_NAME || "";
+const TABLE_NAME = process.env.TABLE_NAME || "Meals_Table";
 const id = uuidv4();
 
 export async function hander(
