@@ -1,19 +1,14 @@
-import {
-  aws_lambda as lambda,
-  aws_apigateway as apigw,
-  NestedStackProps,
-} from "aws-cdk-lib";
+import { aws_lambda as lambda, aws_apigateway as apigw } from "aws-cdk-lib";
 import { RestApi } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 import * as path from "path";
 
-export interface GetMealPlanProps extends NestedStackProps {
-  readonly api: RestApi;
-}
+export interface GetMealPlanProps {}
 
 export class GetMealPlanConstruct extends Construct {
+  readonly api: RestApi;
   constructor(scope: Construct, id: string, props: GetMealPlanProps) {
-    super(scope, id, props);
+    super(scope, id);
 
     const getMealsLambda = new lambda.Function(this, "get-meals-lambda", {
       code: lambda.Code.fromAsset(
@@ -43,6 +38,6 @@ export class GetMealPlanConstruct extends Construct {
     const saveMealLambdaInt = new apigw.LambdaIntegration(saveMealLambda);
 
     this.api.root.addMethod("GET", getMealsLambdaInt);
-    this.api.root.addMetho("POST", saveMealLambdaInt);
+    this.api.root.addMethod("POST", saveMealLambdaInt);
   }
 }
