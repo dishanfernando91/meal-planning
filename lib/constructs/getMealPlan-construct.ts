@@ -1,4 +1,9 @@
-import { aws_lambda as lambda, aws_apigateway as apigw } from "aws-cdk-lib";
+import {
+  aws_lambda as lambda,
+  aws_apigateway as apigw,
+  aws_dynamodb as dynamo,
+  RemovalPolicy,
+} from "aws-cdk-lib";
 import { RestApi } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 import * as path from "path";
@@ -6,9 +11,21 @@ import * as path from "path";
 export interface GetMealPlanProps {}
 
 export class GetMealPlanConstruct extends Construct {
-  readonly api: RestApi;
+  public readonly table: dynamo.Table;
+  private readonly api: RestApi;
+
   constructor(scope: Construct, id: string, props: GetMealPlanProps) {
     super(scope, id);
+
+    this.table = new dynamo.Table(this, "MEALS_TABLE", {
+      removalPolicy: RemovalPolicy.DESTROY,
+      billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: false,
+      partitionKey: {
+        name: "id",
+        type: dynamo.AttributeType.STRING,
+      },
+    });
 
     const getMealsLambda = new lambda.Function(this, "get-meals-lambda", {
       code: lambda.Code.fromAsset(
@@ -25,6 +42,9 @@ export class GetMealPlanConstruct extends Construct {
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: "index.handler",
     });
+
+    this.table.grantReadWriteData(getMealsLambda);
+    this.table.grantReadWriteData(saveMealLambda);
 
     this.api = new apigw.RestApi(this, "meal-plan-rest-api", {
       restApiName: "meal-plan-api",
